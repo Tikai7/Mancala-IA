@@ -151,12 +151,9 @@ else:
 
 print(x_train.shape)
 print(y_train.shape)
-print(x_train[0])
 
 x_train = normalize(x_train, type=1)
 y_train = normalize(y_train, type=2)
-
-print(x_train[0])
 
 model = mancala_model(32, 4)
 model.compile(optimizer=Adam(5e-4),

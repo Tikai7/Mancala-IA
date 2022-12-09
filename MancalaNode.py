@@ -80,11 +80,8 @@ class Node:
 
     def ANN(self):
         state_array = self.create_array()
-
-        # state_array = np.array(
-        #     (state_array - np.min(state_array)) / (np.max(state_array)-np.min(state_array)))
         state_array = np.array(state_array/26)
-        evaluation = model.predict(state_array)[0][0]
+        evaluation = model(state_array)[0][0]
         return evaluation
 
     def MCTS(self, mcts_iteration=MCTS_ITERATIONS):
