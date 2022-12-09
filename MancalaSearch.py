@@ -7,15 +7,15 @@ STEP = 0
 class Search:
 
     @staticmethod
-    def MiniMaxAlphaBeta(noeud: Node, depth, player, alpha, beta, MCTS=False, heuristic=1) -> tuple:
+    def MiniMaxAlphaBeta(noeud: Node, depth, player, alpha, beta, ANN=False, MCTS=False, heuristic=1) -> tuple:
         global STEP
         STEP += 1
-
         noeud.alpha = alpha
         noeud.beta = beta
 
         if depth == 1 or noeud.state.game_over():
-            value = noeud.evaluate(MCTS, heuristic)
+            value = noeud.evaluate(
+                neural_network=ANN, monte_carlo=MCTS, heuristic=heuristic)
             noeud.value = value
             noeud.best_path = noeud
             return noeud, STEP
@@ -29,7 +29,7 @@ class Search:
 
                 for child in succ_childs:
                     Search.MiniMaxAlphaBeta(
-                        child, depth-1, child.player_side, alpha, beta, MCTS, heuristic)
+                        child, depth-1, child.player_side, alpha, beta, ANN, MCTS, heuristic)
                     if child.value > best_value:
                         best_value = child.value
                         best_node = child
@@ -45,7 +45,7 @@ class Search:
 
                 for child in succ_childs:
                     Search.MiniMaxAlphaBeta(
-                        child, depth-1, child.player_side, alpha, beta, MCTS, heuristic)
+                        child, depth-1, child.player_side, alpha, beta, ANN, MCTS, heuristic)
                     if child.value < best_value:
                         best_value = child.value
                         best_node = child
@@ -62,14 +62,15 @@ class Search:
             return noeud, STEP
 
     @ staticmethod
-    def NegaMaxAlphaBeta(noeud: Node, depth, player, alpha, beta, MCTS=False, heuristic=1) -> tuple:
+    def NegaMaxAlphaBeta(noeud: Node, depth, player, alpha, beta, ANN=False, MCTS=False, heuristic=1) -> tuple:
         global STEP
         STEP += 1
         noeud.alpha = alpha
         noeud.beta = beta
 
         if depth == 1 or noeud.state.game_over():
-            value = noeud.evaluate(MCTS, heuristic)
+            value = noeud.evaluate(
+                neural_network=ANN, monte_carlo=MCTS, heuristic=heuristic)
             noeud.value = value
             if player != MAX:
                 noeud.value = -value
@@ -84,7 +85,7 @@ class Search:
 
             for child in succ_childs:
                 Search.NegaMaxAlphaBeta(
-                    child, depth-1, -player, -beta, -alpha, MCTS, heuristic)
+                    child, depth-1, -player, -beta, -alpha, ANN, MCTS, heuristic)
                 if -child.value > best_value:
                     best_value = -child.value
                     best_node = child

@@ -3,7 +3,7 @@ NUMBER_OF_SEEDS = 4
 
 
 class State:
-    def __init__(self) -> None:
+    def __init__(self, board_game=None) -> None:
 
         self.STORES = {"M1", "M2"}
         self.PLAYER_ONE = ("A", "B", "C", "D", "E", "F")
@@ -28,7 +28,13 @@ class State:
             "E": NUMBER_OF_SEEDS,
             "F": NUMBER_OF_SEEDS,
             "M1": 0,
-        }
+        } if board_game == None else board_game
+
+    def total_seed(self):
+        somme = 0
+        for value in self.board_game.values():
+            somme += value
+        return somme
 
     def next_move(self, element, step):
         return chr((ord(element)+step))

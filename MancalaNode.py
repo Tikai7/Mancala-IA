@@ -1,9 +1,12 @@
 import random
-from MancalaBoard import State
+import numpy as np
 from copy import deepcopy
+from MancalaBoard import State
+from tensorflow.keras.models import load_model
 
+model = load_model('./model/model.h5')
 
-MCTS_ITERATIONS = 1000
+MCTS_ITERATIONS = 600
 
 
 class Node:
@@ -35,9 +38,10 @@ class Node:
             node_child = Node(child, current_player,
                               self, mouvement=m, old_player=self.player_side)
             node_child.ranking = node_child.evaluate(
-                monte_carlo=False, heuristic=1)
+                neural_network=False, monte_carlo=False, heuristic=1)
             succ.append(node_child)
 
+        # ----- MOVE ORDERING
         succ = sorted(succ, key=lambda x: x.ranking,
                       reverse=self.player_side == 1)
         return succ
@@ -65,9 +69,27 @@ class Node:
         else:
             return 0
 
-    def MCTS(self):
+    def create_array(self) -> np.ndarray:
+        board_array = []
+        for values in self.state.board_game.values():
+            board_array.append(values)
+
+        board_np_array = np.array(board_array)
+        board_np_array = board_np_array.reshape(-1, 2, 7, 1)
+        return board_np_array
+
+    def ANN(self):
+        state_array = self.create_array()
+
+        # state_array = np.array(
+        #     (state_array - np.min(state_array)) / (np.max(state_array)-np.min(state_array)))
+        state_array = np.array(state_array/26)
+        evaluation = model.predict(state_array)[0][0]
+        return evaluation
+
+    def MCTS(self, mcts_iteration=MCTS_ITERATIONS):
         gain = 0
-        for _ in range(MCTS_ITERATIONS):
+        for _ in range(mcts_iteration):
             winner = self.end_game_since()
             if winner == self.player_side:
                 gain += 1
@@ -84,7 +106,7 @@ class Node:
 
         somme_max = 0
         somme_min = 0
-        weight = 4
+        weight = 7
 
         for key, value in self.state.board_game.items():
             if key in self.state.possible_moves(1):
@@ -99,12 +121,14 @@ class Node:
     def heuristic_1(self):
         return self.state.board_game["M1"] - self.state.board_game["M2"]
 
-    def evaluate(self, monte_carlo=False, heuristic=1):
-        if not monte_carlo:
+    def evaluate(self, neural_network=False, monte_carlo=False, heuristic=1, mcts_iteration=MCTS_ITERATIONS):
+        if not monte_carlo and not neural_network:
             return self.heuristics[heuristic]()
+        elif neural_network == True:
+            return self.ANN()
         else:
-            weight = (MCTS_ITERATIONS//2)
+            weight = (mcts_iteration//2)
             short_term_strategy = self.heuristics[heuristic]()
-            long_term_strategy = self.MCTS()
+            long_term_strategy = self.MCTS(mcts_iteration)
 
             return weight*short_term_strategy+long_term_strategy

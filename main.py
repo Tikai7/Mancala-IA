@@ -107,15 +107,15 @@ init_state = State()
 current_player = 1
 mouvement_to_play = None
 
-human = True
+human = False
 player_1 = "MCTS"
 player_2 = "Human"
 who_won = "no one, it's a draw"
 computer_side = 1
 
 
-MCTS_DEPTH = 12
-MINMAX_DEPTH = 12
+MCTS_DEPTH = 4
+MINMAX_DEPTH = 4
 
 # show_dict_board(init_state.board_game)
 draw_board(surface, init_state.board_game, current_player, launch)
@@ -133,7 +133,7 @@ while launch:
         if human:
             time.sleep(2)
         current_player, init_state = Game.computer_turn(
-            init_state, current_noeud, current_player, MCTS=False, DEPTH=MCTS_DEPTH, heuristic=1, MINMAX=True)
+            init_state, current_noeud, current_player, ANN=True, MCTS=False, DEPTH=MCTS_DEPTH, heuristic=1, MINMAX=True)
 
     else:
         if human:
@@ -146,7 +146,7 @@ while launch:
             current_noeud = Node(init_state, current_player,
                                  None, old_player=current_player)
             current_player, init_state = Game.computer_turn(
-                init_state, current_noeud, current_player, MCTS=False, DEPTH=MINMAX_DEPTH, heuristic=1, MINMAX=True)
+                init_state, current_noeud, current_player, ANN=False, MCTS=False, DEPTH=MINMAX_DEPTH, heuristic=1, MINMAX=True)
 
     if init_state.game_over():
         winner = init_state.find_winner()
