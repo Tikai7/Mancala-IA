@@ -8,14 +8,15 @@ from MancalaNode import Node
 from MancalaBoard import State
 
 from tensorflow.keras import layers
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, SGD, RMSprop
 from tensorflow.keras.models import Model
 
 
+TRAIN = True
 CREATE = False
 EPOCHS = 10
-BATCH_SIZE = 128
-GENERATED_GAME = 50000
+BATCH_SIZE = 256
+GENERATED_GAME = 150000
 
 
 def show_dict_board(board: dict):
@@ -33,8 +34,31 @@ def constrained_sum_sample_pos(n, total):
     """Return a randomly chosen list of n positive integers summing to total.
     Each such list is equally likely to occur."""
 
-    dividers = sorted(random.sample(range(1, total), n - 1))
+    dividers = sorted(random.sample(range(0, total), n - 1))
     return [a - b for a, b in zip(dividers + [total], [0] + dividers)]
+
+
+def reconstruct_games(array: np.ndarray) -> list:
+    game_nodes = []
+    board: np.ndarray
+    board_state = {}
+
+    for board in array:
+        print(board)
+        for rows in board:
+            print(board.shape)
+            print(rows)
+
+        random_player = 1
+        if random.randint(0, 1) == 0:
+            random_player = -1
+
+        new_state = State(board_game=board_state)
+        new_node = Node(new_state, random_player,
+                        None, old_player=random_player)
+        game_nodes.append(new_node)
+
+    return game_nodes
 
 
 def generate_games(GAMES_GENERATED=10):
@@ -60,6 +84,7 @@ def generate_games(GAMES_GENERATED=10):
             games_node.append(new_node)
             games_generated.append(random_board_game)
             i += 1
+            print(i)
 
     print(f"{GAMES_GENERATED} Games have been generated")
     return games_node
@@ -67,9 +92,9 @@ def generate_games(GAMES_GENERATED=10):
 
 def evaluate_game(games_nodes):
     for node in games_nodes:
-        evaluation_MCTS = node.evaluate(
-            neural_network=False, monte_carlo=True, heuristic=1, mcts_iteration=1600)
-        node.ranking = evaluation_MCTS
+        evaluation = node.evaluate(
+            neural_network=False, monte_carlo=False, heuristic=2, mcts_iteration=1000)
+        node.ranking = evaluation
 
     print(f"{len(games_nodes)} Nodes have been evaluated")
 
@@ -86,11 +111,13 @@ def create_array(board: dict) -> np.ndarray:
     return board_np_array
 
 
-def normalize(array: np.ndarray, type=1) -> np.ndarray:
+def normalize(array: np.ndarray, type=1, type_on=1) -> np.ndarray:
     if type == 1:
-        return np.asarray(array/26)
+        return np.array((array-array.min())/(array.max()-array.min()), dtype=np.float32)
+    elif type == 2:
+        return 2*np.array((array-array.min())/(array.max()-array.min()), dtype=np.float32)-1
     else:
-        return np.asarray((array-array.min())/(array.max()-array.min()), dtype=np.float32)
+        return np.array([normalize(arr, type=type_on) for arr in array])
 
 
 def create_dataset(games_evals):
@@ -148,40 +175,38 @@ else:
     x_train = np.load("./dataset/mancala_train.npy")
     y_train = np.load("./dataset/mancala_target.npy")
 
-
-print(x_train.shape)
-print(y_train.shape)
-
-x_train = normalize(x_train, type=1)
+x_train = np.array([arr.reshape(2, 7) for arr in x_train])
+x_train = normalize(x_train, type=3, type_on=2)
 y_train = normalize(y_train, type=2)
 
-model = mancala_model(32, 4)
-model.compile(optimizer=Adam(5e-4),
-              loss='mean_squared_error', metrics=['accuracy'])
-model.summary()
-history = model.fit(
-    x_train, y_train,
-    batch_size=BATCH_SIZE,
-    epochs=EPOCHS,
-    validation_split=0.2
-)
+if TRAIN:
+    model = mancala_model(32, 4)
+    model.compile(optimizer=Adam(5e-4),
+                  loss='mean_squared_error', metrics=['accuracy'])
+    model.summary()
+    history = model.fit(
+        x_train, y_train,
+        batch_size=BATCH_SIZE,
+        epochs=EPOCHS,
+        validation_split=0.1
+    )
 
-model.save('./model/model.h5')
+    model.save('./model/model.h5')
 
-val_loss_curve = history.history["val_loss"]
-val_acc_curve = history.history["val_accuracy"]
-acc_curve = history.history["accuracy"]
-loss_curve = history.history["loss"]
+    val_loss_curve = history.history["val_loss"]
+    val_acc_curve = history.history["val_accuracy"]
+    acc_curve = history.history["accuracy"]
+    loss_curve = history.history["loss"]
 
-plt.style.use("ggplot")
-plt.figure()
-plt.plot(np.arange(0, EPOCHS), loss_curve, label="train_loss")
-plt.plot(np.arange(0, EPOCHS), val_loss_curve, label="val_loss")
-plt.plot(np.arange(0, EPOCHS), acc_curve, label="accuracy")
-plt.plot(np.arange(0, EPOCHS), val_acc_curve, label="val_accuracy")
-plt.title("Training Loss and Accuracy")
-plt.xlabel("Epoch #")
-plt.ylabel("Loss/Accuracy")
-plt.legend(loc="lower left")
-plt.savefig("plot.png")
-plt.show()
+    plt.style.use("ggplot")
+    plt.figure()
+    plt.plot(np.arange(0, EPOCHS), loss_curve, label="train_loss")
+    plt.plot(np.arange(0, EPOCHS), val_loss_curve, label="val_loss")
+    plt.plot(np.arange(0, EPOCHS), acc_curve, label="accuracy")
+    plt.plot(np.arange(0, EPOCHS), val_acc_curve, label="val_accuracy")
+    plt.title("Training Loss and Accuracy")
+    plt.xlabel("Epoch #")
+    plt.ylabel("Loss/Accuracy")
+    plt.legend(loc="lower left")
+    plt.savefig("plot.png")
+    plt.show()

@@ -1,4 +1,5 @@
 import random
+import tensorflow as tf
 import numpy as np
 from copy import deepcopy
 from MancalaBoard import State
@@ -75,14 +76,16 @@ class Node:
             board_array.append(values)
 
         board_np_array = np.array(board_array)
-        board_np_array = board_np_array.reshape(-1, 2, 7, 1)
+        board_np_array = board_np_array.reshape(-1, 2, 7)
         return board_np_array
 
     def ANN(self):
         state_array = self.create_array()
-        state_array = np.array(state_array/26)
+        state_array = 2*np.array(
+            (state_array-state_array.min())/(state_array.max()-state_array.min()))-1
         evaluation = model(state_array)[0][0]
-        return evaluation
+        evaluation_value = tf.keras.backend.get_value(evaluation)
+        return evaluation_value
 
     def MCTS(self, mcts_iteration=MCTS_ITERATIONS):
         gain = 0
@@ -103,7 +106,7 @@ class Node:
 
         somme_max = 0
         somme_min = 0
-        weight = 7
+        weight = 10
 
         for key, value in self.state.board_game.items():
             if key in self.state.possible_moves(1):

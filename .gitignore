@@ -3,3 +3,4 @@
 *.pdf
 *.rar
 /_pycache_
+/dataset_recovery
