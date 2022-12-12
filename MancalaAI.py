@@ -12,9 +12,10 @@ from tensorflow.keras.optimizers import Adam, SGD, RMSprop
 from tensorflow.keras.models import Model
 
 
+FILE = "model_nn.h5"
 TRAIN = True
 CREATE = False
-EPOCHS = 10
+EPOCHS = 1000
 BATCH_SIZE = 256
 GENERATED_GAME = 150000
 
@@ -135,6 +136,20 @@ def create_dataset(games_evals):
     return np.array(games_dataset), labels_dataset
 
 
+def mancala_model_two():
+
+    board = layers.Input(shape=(2, 7, 1))
+    x = layers.Flatten(name="flatten")(board)
+    x = layers.Dense(256)(x)
+    x = layers.ReLU()(x)
+    x = layers.Dense(128)(x)
+    x = layers.ReLU()(x)
+    x = layers.Dropout(0.5)(x)
+    x = layers.Dense(1, 'linear')(x)
+
+    return Model(inputs=board, outputs=x)
+
+
 def mancala_model(conv_size, conv_depth):
     board = layers.Input(shape=(2, 7, 1))
 
@@ -176,12 +191,13 @@ else:
     y_train = np.load("./dataset/mancala_target.npy")
 
 x_train = np.array([arr.reshape(2, 7) for arr in x_train])
-x_train = normalize(x_train, type=3, type_on=2)
-y_train = normalize(y_train, type=2)
+x_train = normalize(x_train, type=3, type_on=1)
+# y_train = normalize(y_train, type=2)
 
 if TRAIN:
-    model = mancala_model(32, 4)
-    model.compile(optimizer=Adam(5e-4),
+    # model = mancala_model(32, 4)
+    model = mancala_model_two()
+    model.compile(optimizer=Adam(1e-3),
                   loss='mean_squared_error', metrics=['accuracy'])
     model.summary()
     history = model.fit(
@@ -191,7 +207,7 @@ if TRAIN:
         validation_split=0.1
     )
 
-    model.save('./model/model.h5')
+    model.save(f'./model/{FILE}')
 
     val_loss_curve = history.history["val_loss"]
     val_acc_curve = history.history["val_accuracy"]
