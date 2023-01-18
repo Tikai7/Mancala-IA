@@ -114,8 +114,8 @@ who_won = "no one, it's a draw"
 computer_side = 1
 
 
-MCTS_DEPTH = 6
-MINMAX_DEPTH = 6
+MCTS_DEPTH = 5
+MINMAX_DEPTH = 5
 
 # show_dict_board(init_state.board_game)
 draw_board(surface, init_state.board_game, current_player, launch)
@@ -133,7 +133,7 @@ while launch:
         if human:
             time.sleep(2)
         current_player, init_state = Game.computer_turn(
-            init_state, current_noeud, current_player, ANN=True, MCTS=False, DEPTH=MCTS_DEPTH, heuristic=1, MINMAX=True)
+            init_state, current_noeud, current_player, ANN=False, MCTS=True, DEPTH=MCTS_DEPTH, heuristic=1, MINMAX=True)
 
     else:
         if human:
