@@ -101,7 +101,8 @@ class Node:
         moves_1 = len(self.state.possible_moves(1))
         moves_2 = len(self.state.possible_moves(-1))
 
-        return moves_1-moves_2
+        node_value = moves_1-moves_2
+        return self.heuristic_1()*1.5+self.heuristic_2()*3+node_value
 
     def heuristic_2(self):
         max_store = self.state.board_game["M1"]

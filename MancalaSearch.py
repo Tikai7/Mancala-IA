@@ -3,7 +3,7 @@ from MancalaNode import Node
 
 MAX = 1
 STEP = 0
-TIME_MAX = 15
+TIME_MAX = 10
 
 
 class Search:
@@ -14,11 +14,11 @@ class Search:
         STEP += 1
         noeud.alpha = alpha
         noeud.beta = beta
-        if MCTS:
+
+        if MCTS or ANN:
             current_time = time.time()
             time_passed = current_time-max_time
             if time_passed > TIME_MAX:
-                print(time_passed)
                 depth = 1
 
         if depth == 1 or noeud.state.game_over():
@@ -75,11 +75,10 @@ class Search:
         STEP += 1
         noeud.alpha = alpha
         noeud.beta = beta
-        if MCTS:
+        if MCTS or ANN:
             current_time = time.time()
             time_passed = current_time-max_time
             if time_passed > TIME_MAX:
-                print(time_passed)
                 depth = 1
 
         if depth == 1 or noeud.state.game_over():
