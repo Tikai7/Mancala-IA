@@ -133,7 +133,7 @@ while launch:
         if human:
             time.sleep(2)
         current_player, init_state = Game.computer_turn(
-            init_state, current_noeud, current_player, ANN=False, MCTS=True, DEPTH=MCTS_DEPTH, heuristic=1, MINMAX=True)
+            init_state, current_noeud, current_player, ANN=False, MCTS=False, DEPTH=MCTS_DEPTH, heuristic=1, MINMAX=True)
 
     else:
         if human:
@@ -146,7 +146,7 @@ while launch:
             current_noeud = Node(init_state, current_player,
                                  None, old_player=current_player)
             current_player, init_state = Game.computer_turn(
-                init_state, current_noeud, current_player, ANN=False, MCTS=False, DEPTH=MINMAX_DEPTH, heuristic=1, MINMAX=True)
+                init_state, current_noeud, current_player, ANN=True, MCTS=False, DEPTH=MINMAX_DEPTH, heuristic=1, MINMAX=True)
 
     if init_state.game_over():
         winner = init_state.find_winner()
