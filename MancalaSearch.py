@@ -15,13 +15,8 @@ class Search:
         noeud.alpha = alpha
         noeud.beta = beta
 
-        if MCTS or ANN:
-            current_time = time.time()
-            time_passed = current_time-max_time
-            if time_passed > TIME_MAX:
-                depth = 1
-
-        if depth == 1 or noeud.state.game_over():
+        # if depth == 1 or noeud.state.game_over():
+        if depth == 1 or noeud.state.game_over() or time.time()-max_time > TIME_MAX:
             value = noeud.evaluate(
                 neural_network=ANN, monte_carlo=MCTS, heuristic=heuristic)
             noeud.value = value
@@ -75,13 +70,8 @@ class Search:
         STEP += 1
         noeud.alpha = alpha
         noeud.beta = beta
-        if MCTS or ANN:
-            current_time = time.time()
-            time_passed = current_time-max_time
-            if time_passed > TIME_MAX:
-                depth = 1
 
-        if depth == 1 or noeud.state.game_over():
+        if depth == 1 or noeud.state.game_over() or time.time()-max_time > TIME_MAX:
             value = noeud.evaluate(
                 neural_network=ANN, monte_carlo=MCTS, heuristic=heuristic)
             noeud.value = value

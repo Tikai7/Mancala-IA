@@ -17,7 +17,6 @@ class Play:
             if MINMAX:
                 best_node, STEP = Search.MiniMaxAlphaBeta(
                     Noeud, DEPTH, current_player, Noeud.alpha, Noeud.beta, ANN, MCTS, heuristic, start_time)
-
             else:
                 best_node, STEP = Search.NegaMaxAlphaBeta(
                     Noeud, DEPTH, current_player, Noeud.alpha, Noeud.beta, ANN, MCTS, heuristic, start_time)
